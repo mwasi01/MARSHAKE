@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Top IMDB - Marsha Ke</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary: #e50914;
+      --primary-dark: #b20710;
+      --dark: #141414;
+      --dark-light: #222;
+      --text: #fff;
+      --text-secondary: #999;
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: var(--dark);
+      color: var(--text);
+      line-height: 1.6;
+    }
+    
+    /* Header Styles */
+    header {
+      background: linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 100%);
+      padding: 20px 50px;
+      position: fixed;
+      width: 100%;
+      z-index: 100;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: all 0.3s ease;
+    }
+    
+    header.scrolled {
+      background-color: var(--dark);
+      box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+    }
+    
+    .logo {
+      color: var(--primary);
+      font-size: 28px;
+      font-weight: bold;
+      text-decoration: none;
+    }
+    
+    .logo span {
+      color: var(--text);
+    }
+    
+    nav ul {
+      display: flex;
+      list-style: none;
+    }
+    
+    nav ul li {
+      margin-left: 20px;
+    }
+    
+    nav ul li a {
+      color: var(--text);
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.3s;
+    }
+    
+    nav ul li a:hover {
+      color: var(--primary);
+    }
+    
+    .search-box {
+      display: flex;
+      align-items: center;
+      background-color: rgba(255,255,255,0.1);
+      border-radius: 4px;
+      padding: 8px 15px;
+      margin-left: 20px;
+    }
+    
+    .search-box input {
+      background: transparent;
+      border: none;
+      color: var(--text);
+      padding: 5px;
+      width: 200px;
+      outline: none;
+    }
+    
+    .search-box button {
+      background: transparent;
+      border: none;
+      color: var(--text);
+      cursor: pointer;
+    }
+    
+    /* Page Header */
+    .page-header {
+      background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('https://image.tmdb.org/t/p/original/wwemzKWzjKYJFfCeiB57q3r4Bcm.png') no-repeat center center/cover;
+      height: 300px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      margin-bottom: 50px;
+    }
+    
+    .page-header h1 {
+      font-size: 48px;
+      margin-bottom: 20px;
+    }
+    
+    .breadcrumb {
+      display: flex;
+      justify-content: center;
+      list-style: none;
+    }
+    
+    .breadcrumb li {
+      margin: 0 10px;
+      color: var(--text-secondary);
+    }
+    
+    .breadcrumb li a {
+      color: var(--text);
+      text-decoration: none;
+    }
+    
+    .breadcrumb li a:hover {
+      color: var(--primary);
+    }
+    
+    .breadcrumb li:after {
+      content: '/';
+      margin-left: 10px;
+    }
+    
+    .breadcrumb li:last-child:after {
+      content: '';
+    }
+    
+    /* Main Content */
+    .container {
+      padding: 0 50px 50px;
+    }
+    
+    .filter-section {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+    }
+    
+    .filter-group {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+    
+    .filter-btn {
+      padding: 8px 15px;
+      background-color: var(--dark-light);
+      border-radius: 4px;
+      text-decoration: none;
+      color: var(--text);
+      font-size: 14px;
+      transition: all 0.3s;
+      border: none;
+      cursor: pointer;
+    }
+    
+    .filter-btn:hover, .filter-btn.active {
+      background-color: var(--primary);
+    }
+    
+    .sort-select {
+      background-color: var(--dark-light);
+      color: var(--text);
+      border: none;
+      padding: 8px 15px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    
+    .top-imdb-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 20px;
+      margin-bottom: 50px;
+    }
+    
+    .imdb-card {
+      background-color: var(--dark-light);
+      border-radius: 8px;
+      overflow: hidden;
+      transition: transform 0.3s;
+      position: relative;
+    }
+    
+    .imdb-card:hover {
+      transform: translateY(-10px);
+    }
+    
+    .imdb-poster {
+      width: 100%;
+      height: 300px;
+      object-fit: cover;
+    }
+    
+    .imdb-info {
+      padding: 15px;
+    }
+    
+    .imdb-title {
+      font-size: 16px;
+      margin-bottom: 5px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    .imdb-meta {
+      display: flex;
+      justify-content: space-between;
+      color: var(--text-secondary);
+      font-size: 14px;
+    }
+    
+    .imdb-rating {
+      background-color: #f5c518;
+      color: #000;
+      padding: 2px 5px;
+      border-radius: 3px;
+      font-size: 12px;
+      font-weight: bold;
+      position: absolute;
+      top: 10px;
+      left: 10px;
+    }
+    
+    .imdb-quality {
+      background-color: var(--primary);
+      color: white;
+      padding: 2px 5px;
+      border-radius: 3px;
+      font-size: 12px;
+      position: absolute;
+      top: 10px;
+      right: 10px;
+    }
+    
+    .download-btn {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background-color: var(--primary);
+      color: white;
+      text-align: center;
+      padding: 10px;
+      text-decoration: none;
+      font-weight: bold;
+      transform: translateY(100%);
+      transition: transform 0.3s;
+    }
+    
+    .imdb-card:hover .download-btn {
+      transform: translateY(0);
+    }
+    
+    .pagination {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 50px;
+    }
+    
+    .page-btn {
+      padding: 8px 15px;
+      background-color: var(--dark-light);
+      border-radius: 4px;
+      text-decoration: none;
+      color: var(--text);
+      transition: all 0.3s;
+    }
+    
+    .page-btn:hover, .page-btn.active {
+      background-color: var(--primary);
+    }
+    
+    /* Footer */
+    footer {
+      background-color: var(--dark-light);
+      padding: 50px;
+      text-align: center;
+    }
+    
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      margin-bottom: 30px;
+    }
+    
+    .footer-links a {
+      color: var(--text-secondary);
+      text-decoration: none;
+    }
+    
+    .footer-links a:hover {
+      color: var(--primary);
+    }
+    
+    .social-icons {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+    
+    .social-icons a {
+      color: var(--text);
+      font-size: 20px;
+    }
+    
+    .copyright {
+      color: var(--text-secondary);
+      font-size: 14px;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+      header {
+        padding: 15px 20px;
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      
+      nav {
+        margin-top: 15px;
+        width: 100%;
+      }
+      
+      .search-box {
+        margin-left: 0;
+        margin-top: 15px;
+        width: 100%;
+      }
+      
+      .page-header {
+        height: 200px;
+        margin-bottom: 30px;
+      }
+      
+      .page-header h1 {
+        font-size: 32px;
+      }
+      
+      .container {
+        padding: 0 20px 20px;
+      }
+      
+      .filter-section {
+        flex-direction: column;
+      }
+      
+      .top-imdb-grid {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      }
+      
+      .imdb-poster {
+        height: 225px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header id="header">
+    <a href="index.html" class="logo">MARSHA<span>KE</span></a>
+    <nav>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="movies.html">Movies</a></li>
+        <li><a href="tv-shows.html">TV Shows</a></li>
+        <li><a href="top-imdb.html" class="active">Top IMDB</a></li>
+      </ul>
+    </nav>
+    <div class="search-box">
+      <input type="text" placeholder="Search top-rated...">
+      <button><i class="fas fa-search"></i></button>
+    </div>
+  </header>
+  
+  <section class="page-header">
+    <div>
+      <h1>Top IMDB Rated</h1>
+      <ul class="breadcrumb">
+        <li><a href="index.html">Home</a></li>
+        <li>Top IMDB</li>
+      </ul>
+    </div>
+  </section>
+  
+  <div class="container">
+    <div class="filter-section">
+      <div class="filter-group">
+        <button class="filter-btn active">All</button>
+        <button class="filter-btn">Movies</button>
+        <button class="filter-btn">TV Shows</button>
+        <button class="filter-btn">Action</button>
+        <button class="filter-btn">Drama</button>
+      </div>
+      <div class="filter-group">
+        <select class="sort-select">
+          <option>Sort by: Rating</option>
+          <option>Sort by: Popularity</option>
+          <option>Sort by: Newest</option>
+          <option>Sort by: A-Z</option>
+        </select>
+      </div>
+    </div>
+    
+    <div class="top-imdb-grid">
+      <!-- The Shawshank Redemption -->
+      <div class="imdb-card">
+        <span class="imdb-rating">9.3</span>
+        <span class="imdb-quality">HD</span>
+        <img src="https://image.tmdb.org/t/p/w500/q6y0Go1tsGEsmtFryDOJo3dEmqu.jpg" alt="The Shawshank Redemption" class="imdb-poster">
+        <div class="imdb-info">
+          <h3 class="imdb-title">The Shawshank Redemption</h3>
+          <div class="imdb-meta">
+            <span>1994</span>
+            <span>2h 22m</span>
+          </div>
+        </div>
+        <a href="#" class="download-btn"><i class="fas fa-download"></i> Download</a>
+      </div>
+      
+      <!-- The Godfather -->
+      <div class="imdb-card">
+        <span class="imdb-rating">9.2</span>
+        <span class="imdb-quality">HD</span>
+        <img src="https://image.tmdb.org/t/p/w500/3bhkrj58Vtu7enYsRolD1fZdja1.jpg" alt="The Godfather" class="imdb-poster">
+        <div class="imdb-info">
+          <h3 class="imdb-title">The Godfather</h3>
+          <div class="imdb-meta">
+            <span>1972</span>
+            <span>2h 55m</span>
+          </div>
+        </div>
+        <a href="#" class="download-btn"><i class="fas fa-download"></i> Download</a>
+      </div>
+      
+      <!-- The Dark Knight -->
+      <div class="imdb-card">
+        <span class="imdb-rating">9.0</span>
+        <span class="imdb-quality">4K</span>
+        <img src="https://image.tmdb.org/t/p/w500/qJ2tW6WMUDux911r6m7haRef0WH.jpg" alt="The Dark Knight" class="imdb-poster">
+        <div class="imdb-info">
+          <h3 class="imdb-title">The Dark Knight</h3>
+          <div class="imdb-meta">
+            <span>2008</span>
+            <span>2h 32m</span>
+          </div>
+        </div>
+        <a href="#" class="download-btn"><i class="fas fa-download"></i> Download</a>
+      </div>
+      
+      <!-- Breaking Bad -->
+      <div class="imdb-card">
+        <span class="imdb-rating">9.5</span>
+        <span class="imdb-quality">HD</span>
+        <img src="https://image.tmdb.org/t/p/w500/ggFHVNu6YYI5L9pCfOacjizRGt.jpg" alt="Breaking Bad" class="imdb-poster">
+        <div class="imdb-info">
+          <h3 class="imdb-title">Breaking Bad</h3>
+          <div class="imdb-meta">
+            <span>2008-2013</span>
+            <span>5 Seasons</span>
+          </div>
+        </div>
+        <a href="#" class="download-btn"><i class="fas fa-download"></i> Download</a>
+      </div>
+      
+      <!-- The Godfather Part II -->
+      <div class="imdb-card">
+        <span class="imdb-rating">9.0</span>
+        <span class="imdb-quality">HD</span>
+        <img src="https://image.tmdb.org/t/p/w500/hek3koDUyRQk7FIhPXsa6mT2Zc3.jpg" alt="The Godfather Part II" class="imdb-poster">
+        <div class="imdb-info">
+          <h3 class="imdb-title">The Godfather Part II</h3>
+          <div class="imdb-meta">
+            <span>1974</span>
+            <span>3h 22m</span>
+          </div>
+        </div>
+        <a href="#" class="download-btn"><i class="fas fa-download"></i> Download</a>
+      </div>
+      
+      <!-- The Lord of the Rings: The Return of the King -->
+      <div class="imdb-card">
+        <span class="imdb-rating">9.0</span>
+        <span class="imdb-quality">4K</span>
+        <img src="https://image.tmdb.org/t/p/w500/rCzpDGLbOoPwLjy3OAm5NUPOTrC.jpg" alt="The Lord of the Rings: The Return of the King" class="imdb-poster">
+        <div class="imdb-info">
+          <h3 class="imdb-title">The Lord of the Rings: The Return of the King</h3>
+          <div class="imdb-meta">
+            <span>2003</span>
+            <span>3h 21m</span>
+          </div>
+        </div>
+        <a href="#" class="download-btn"><i class="fas fa-download"></i> Download</a>
+      </div>
+      
+      <!-- Pulp Fiction -->
+      <div class="imdb-card">
+        <span class="imdb-rating">8.9</span>
+        <span class="imdb-quality">HD</span>
+        <img src="https://image.tmdb.org/t/p/w500/d5iIlFn5s0ImszYzBPb8JPIfbXD.jpg" alt="Pulp Fiction" class="imdb-poster">
+        <div class="imdb-info">
+          <h3 class="imdb-title">Pulp Fiction</h3>
+          <div class="imdb-meta">
+            <span>1994</span>
+            <span>2h 34m</span>
+          </div>
+        </div>
+        <a href="#" class="download-btn"><i class="fas fa-download"></i> Download</a>
+      </div>
+      
+      <!-- Game of Thrones -->
+      <div class="imdb-card">
+        <span class="imdb-rating">9.2</span>
+        <span class="imdb-quality">4K</span>
+        <img src="https://image.tmdb.org/t/p/w500/u3bZgnGQ9T01sWNhyveQz0wH0Hl.jpg" alt="Game of Thrones" class="imdb-poster">
+        <div class="imdb-info">
+          <h3 class="imdb-title">Game of Thrones</h3>
+          <div class="imdb-meta">
+            <span>2011-2019</span>
+            <span>8 Seasons</span>
+          </div>
+        </div>
+        <a href="#" class="download-btn"><i class="fas fa-download"></i> Download</a>
+      </div>
+    </div>
+    
+    <div class="pagination">
+      <a href="#" class="page-btn"><i class="fas fa-chevron-left"></i></a>
+      <a href="#" class="page-btn active">1</a>
+      <a href="#" class="page-btn">2</a>
+      <a href="#" class="page-btn">3</a>
+      <a href="#" class="page-btn">4</a>
+      <a href="#" class="page-btn">5</a>
+      <a href="#" class="page-btn"><i class="fas fa-chevron-right"></i></a>
+    </div>
+  </div>
+  
+  <footer>
+    <div class="footer-links">
+      <a href="index.html">Home</a>
+      <a href="movies.html">Movies</a>
+      <a href="tv-shows.html">TV Shows</a>
+      <a href="top-imdb.html">Top IMDB</a>
+      <a href="request.html">Request</a>
+      <a href="dmca.html">DMCA</a>
+    </div>
+    <div class="social-icons">
+      <a href="#"><i class="fab fa-facebook-f"></i></a>
+      <a href="#"><i class="fab fa-twitter"></i></a>
+      <a href="#"><i class="fab fa-instagram"></i></a>
+      <a href="#"><i class="fab fa-telegram"></i></a>
+    </div>
+    <p class="copyright">© 2023 Marsha Ke. All Rights Reserved.</p>
+  </footer>
+  
+  <script>
+    // Header scroll effect
+    window.addEventListener('scroll', function() {
+      const header = document.getElementById('header');
+      if (window.scrollY > 100) {
+        header.classList.add('scrolled');
+      } else {
+        header.classList.remove('scrolled');
+      }
+    });
+    
+    // Filter buttons functionality
+    const filterBtns = document.querySelectorAll('.filter-btn');
+    filterBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        filterBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        // Here you would add code to filter by category
+      });
+    });
+  </script>
+</body>
+</html>
